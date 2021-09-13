@@ -2,6 +2,9 @@ package libs.notification;
 
 import com.xrpllabs.xumm.R;
 
+import android.app.Notification;
+import android.content.Context;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.Build;
 
@@ -11,15 +14,23 @@ import android.content.SharedPreferences;
 import android.app.PendingIntent;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.service.notification.StatusBarNotification;
+import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.Arguments;
 
 import com.google.firebase.messaging.RemoteMessage;
 
+import androidx.collection.ArrayMap;
 import androidx.core.app.NotificationCompat;
+
+import java.util.Iterator;
 
 import me.leolin.shortcutbadger.ShortcutBadger;
 
@@ -35,8 +46,7 @@ public class LocalNotificationModule extends ReactContextBaseJavaModule {
         super(context);
         this.context = context;
 
-        sharedPreferences = context.getSharedPreferences(BADGE_FILE, context.MODE_PRIVATE);
-
+        sharedPreferences = context.getSharedPreferences(BADGE_FILE, Context.MODE_PRIVATE);
     }
 
     @Override
@@ -57,7 +67,6 @@ public class LocalNotificationModule extends ReactContextBaseJavaModule {
                 String channelId = "notifications";
                 int notificationId = (int) SystemClock.uptimeMillis();
 
-
                 Intent intent = new Intent(this.context, NotificationActionReceiver.class);
                 intent.setAction(this.context.getPackageName() + ".ACTION_NOTIFICATION_OPENED");
                 intent.setPackage(this.context.getPackageName());
@@ -66,7 +75,6 @@ public class LocalNotificationModule extends ReactContextBaseJavaModule {
 
                 intent.putExtras(remoteMessage.toIntent());
                 intent.putExtra("notificationId", notificationId);
-
 
                 PendingIntent pendingActionIntent = PendingIntent.getBroadcast(this.context, notificationId, intent,
                         PendingIntent.FLAG_UPDATE_CURRENT);
@@ -81,28 +89,45 @@ public class LocalNotificationModule extends ReactContextBaseJavaModule {
                         .setContentIntent(pendingActionIntent);
 
 
-                NotificationManager manager = (NotificationManager) this.context.getSystemService(this.context.NOTIFICATION_SERVICE);
+                NotificationManager manager = (NotificationManager) this.context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder.setCategory(NotificationCompat.CATEGORY_CALL);
-
-                    builder.setColor(this.context.getResources().getColor(R.color.pushIcon));
-                }
-
+                builder.setCategory(NotificationCompat.CATEGORY_CALL);
+                builder.setColor(this.context.getResources().getColor(R.color.pushIcon));
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     NotificationChannel channel = new NotificationChannel(channelId, "Notification channel", NotificationManager.IMPORTANCE_DEFAULT);
                     manager.createNotificationChannel(channel);
                 }
 
-
                 manager.notify(remoteMessage.getCollapseKey(), notificationId, builder.build());
-
             }
 
             // remove the notification
             NotificationMessageReceiver.notifications.remove(handlerKey);
         }
+    }
+
+
+    @ReactMethod
+    public void getDeliveredNotifications(final Promise promise) {
+        NotificationManager notificationManager = (NotificationManager) this.context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        StatusBarNotification[] statusBarNotifications = notificationManager.getActiveNotifications();
+        WritableArray result = Arguments.createArray();
+        for (StatusBarNotification sbn:statusBarNotifications) {
+            WritableMap map = Arguments.createMap();
+            Notification n = sbn.getNotification();
+            
+            Bundle bundle = n.extras;
+
+            int identifier = sbn.getId();
+            String channelId = bundle.getString("channel_id");
+            map.putInt("identifier", identifier);
+            map.putString("channel_id", channelId);
+
+            result.pushMap(map);
+        }
+        promise.resolve(result);
     }
 
     @ReactMethod

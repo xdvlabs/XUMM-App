@@ -22,7 +22,7 @@ RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(complete:(NSString*)handlerKey show:(BOOL*)show) {
   if (handlerKey != nil) {
-    void(^completionHandler)(UNNotificationPresentationOptions) = [LocalNotificationModule sharedInstance].completionHandlers[handlerKey] ;
+    void(^completionHandler)(UNNotificationPresentationOptions) = [LocalNotificationModule sharedInstance].completionHandlers[handlerKey];
     if (completionHandler != nil) {
       [LocalNotificationModule sharedInstance].completionHandlers[handlerKey] = nil;
       
@@ -32,7 +32,30 @@ RCT_EXPORT_METHOD(complete:(NSString*)handlerKey show:(BOOL*)show) {
         completionHandler(UNNotificationPresentationOptionNone);
       }
     }
-    
+  }
+}
+
+RCT_EXPORT_METHOD(removeDeliveredNotification:(NSString*)notificationId) {
+  UNUserNotificationCenter *notificationCenter = [UNUserNotificationCenter currentNotificationCenter];
+  if (notificationCenter != nil) {
+    [[UNUserNotificationCenter currentNotificationCenter] removeDeliveredNotificationsWithIdentifiers:@[notificationId]];
+  }
+}
+
+RCT_EXPORT_METHOD(getDeliveredNotifications:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  UNUserNotificationCenter *notificationCenter = [UNUserNotificationCenter currentNotificationCenter];
+  if (notificationCenter != nil) {
+    [notificationCenter getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> *_Nonnull notifications) {
+      NSMutableArray<NSDictionary *> *formattedNotifications = [NSMutableArray new];
+      for (UNNotification *notification in notifications) {
+        NSDictionary *parsedUserInfo = [self parseUserInfo:notification.request.content.userInfo];
+        [parsedUserInfo setValue:[NSString stringWithString:notification.request.identifier] forKey:@"identifier"];
+        [formattedNotifications addObject:parsedUserInfo];
+      }
+      resolve(formattedNotifications);
+    }];
+  }else{
+    resolve(@[]);
   }
 }
 
@@ -51,7 +74,7 @@ RCT_EXPORT_METHOD(setBadge:(NSInteger)number) {
   if (notification.request.content.userInfo) {
     NSDictionary *parsedUserInfo = [self parseUserInfo:notification.request.content.userInfo];
     NSString *handlerKey = parsedUserInfo[@"notificationId"];
-        
+    
     if (handlerKey != nil) {
       [LocalNotificationModule sharedInstance].completionHandlers[handlerKey] = completionHandler;
     }
