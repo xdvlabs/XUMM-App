@@ -27,8 +27,10 @@ Then('I type my new passcode', async () => {
 
 Then('I enter my passphrase in {string}', async (input) => {
     await element(by.id(input)).typeText(passphrase);
+    await element(by.id(input)).tapReturnKey();
 });
 
 Then('I enter my new passphrase in {string}', async (input) => {
     await element(by.id(input)).typeText(newPassphrase);
+    await element(by.id(input)).tapReturnKey();
 });

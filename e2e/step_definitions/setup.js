@@ -9,3 +9,14 @@ Then('I agree all disclaimers', async () => {
         await element(by.id('agree-check-box')).tap();
     }
 });
+
+Then('I skip biomterics if present', async () => {
+    try {
+        await waitFor(element(by.id('biometric-setup-view')))
+            .toBeVisible()
+            .withTimeout(2000);
+        await element(by.id('skip-button')).tap();
+    } catch {
+        // ignore
+    }
+});

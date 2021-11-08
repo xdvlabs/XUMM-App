@@ -91,7 +91,7 @@
 -keep class com.samsung.android.sdk.** { *; }
 -dontwarn com.samsung.android.sdk.**
 
-#proguard for org.spongycastle
+#------------- Tangem SDK (spongycastle) ------------------
 -keep class org.spongycastle.crypto.* {*;}
 -keep class org.spongycastle.crypto.agreement.** {*;}
 -keep class org.spongycastle.crypto.digests.* {*;}

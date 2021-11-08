@@ -20,7 +20,7 @@ Then('I wait {int} sec for button {string} to be enabled', async (timeoutSec, bu
         }
         sec_passed += 1;
     }
-
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     if (!enabled) {
         throw new Error(`button with id ${buttonId} is not enabled after ${timeoutSec} seconds!`);
     }
@@ -28,6 +28,7 @@ Then('I wait {int} sec for button {string} to be enabled', async (timeoutSec, bu
 
 Then('I enter {string} in {string}', async (value, textInputId) => {
     await element(by.id(textInputId)).typeText(value);
+    await element(by.id(textInputId)).tapReturnKey();
 });
 
 Given('I should have {string}', async (screenId) => {

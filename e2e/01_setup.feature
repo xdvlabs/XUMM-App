@@ -14,6 +14,9 @@ Feature: Setup App
         Then I type my passcode
         Then I tap 'next-button'
 
+    Scenario: Setup biometrics
+        Then I skip biomterics if present
+
     Scenario: Setup Disclaimers
         Given I should have 'disclaimers-setup-screen'
         Given I should see 'disclaimer-content-view'
@@ -21,7 +24,7 @@ Feature: Setup App
 
     Scenario: Finish setup
         Given I should wait 5 sec to see 'agreement-setup-screen'
-        Then I wait 5 sec for button 'confirm-button' to be enabled
+        Then I wait 10 sec for button 'confirm-button' to be enabled
         Then I tap 'confirm-button'
 
     Scenario: After setup
@@ -29,19 +32,19 @@ Feature: Setup App
         Then I tap 'close-change-log-button'
         Given I should see 'home-tab-empty-view'
 
-    Scenario: Change node to testnet
-        Then I tap 'tab-Settings'
-        Given I should have 'settings-tab-screen'
-        Then I tap 'advanced-button'
-        Given I should have 'advanced-settings-screen'
-        Then I tap 'change-node-button'
-        Given I should have 'nodes-list-screen'
-        Then I tap 'node-wss://s.altnet.rippletest.net:51233'
-        Then I tap alert button with label "Yes, I'm sure"
-        Then I tap 'back-button'
-        Given I should have 'advanced-settings-screen'
-        Then I tap 'back-button'
-        Given I should have 'settings-tab-screen'
+    # Scenario: Change node to testnet
+    #     Then I tap 'tab-Settings'
+    #     Given I should have 'settings-tab-screen'
+    #     Then I tap 'advanced-button'
+    #     Given I should have 'advanced-settings-screen'
+    #     Then I tap 'change-node-button'
+    #     Given I should have 'nodes-list-screen'
+    #     Then I tap 'node-wss://s.altnet.rippletest.net:51233'
+    #     Then I tap alert button with label "Yes, I'm sure"
+    #     Then I tap 'back-button'
+    #     Given I should have 'advanced-settings-screen'
+    #     Then I tap 'back-button'
+    #     Given I should have 'settings-tab-screen'
 
 
 
